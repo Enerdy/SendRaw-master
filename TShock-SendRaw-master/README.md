@@ -23,9 +23,18 @@ Commands:
 
 /sendcolor **color** *message* - *message* is broadcast in the color specified. Valid colors are defined by the [C# color table](http://www.imgtoys.com/images/CSharpColorTable_1462D/CsharpColorTable.png) ([official docs](http://msdn.microsoft.com/en-us/library/system.drawing.color.aspx)). Primary and secondary colors are all in there.
 
-/sendrgb* [R] [G] [B.] [message] - [message] is broadcast in text color defined by rgb values.
+/sendrgb* [R] [G] [B] [message] - [message] is broadcast in text color defined by rgb values.
 
 /sendas **player name** *message* - *message* is broadcast to the server as though **player name** has said it, with the correct group color, prefix, and suffix
+
+Changelog (Enerdy):
+==============
+**1.1.2:**
+ - Updated for Terraria v1.2.3.1 and TShock API v1.15
+ - Rewrote outdated code for better compatibility
+ - Minor: Removed incorrect spacing before the actual message
+ - Minor: Colors are no longer case sensitive
+ - Minor: SendAs now correctly displays a player's full name even if it is not fully written
 
 To Do:
 ==============

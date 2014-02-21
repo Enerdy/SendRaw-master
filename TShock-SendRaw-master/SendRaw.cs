@@ -13,7 +13,7 @@ using System.ComponentModel;
 
 namespace PluginTemplate
 {
-	[ApiVersion(1, 14)]
+	[ApiVersion(1, 15)]
 	public class PluginTemplate : TerrariaPlugin
 	{
 		public override string Name
@@ -22,7 +22,7 @@ namespace PluginTemplate
 		}
 		public override string Author
 		{
-			get { return "Efreak"; }
+			get { return "Efreak, updated by Enerdy"; }
 		}
 		public override string Description
 		{
@@ -35,12 +35,13 @@ namespace PluginTemplate
 
 		public override void Initialize()
 		{
-            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+            Commands.ChatCommands.Add(new Command("sendraw", SendRa, "sendraw"));
+            Commands.ChatCommands.Add(new Command("sendcolor", SendColor, "sendcolor"));
+            Commands.ChatCommands.Add(new Command("sendrgb", SendRGB, "sendrgb"));
+            Commands.ChatCommands.Add(new Command("sendas", SendAs, "sendas"));
 		}
 		protected override void Dispose(bool disposing)
 		{
-
-            ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
 			base.Dispose(disposing);
 		}
 		public PluginTemplate(Main game)
@@ -48,24 +49,17 @@ namespace PluginTemplate
 		{
 		}
 
-		public void OnInitialize(EventArgs args)
-		{
-			Commands.ChatCommands.Add(new Command("sendraw", SendRa, "sendraw"));
-			Commands.ChatCommands.Add(new Command("sendcolor", SendColor, "sendcolor"));
-            Commands.ChatCommands.Add(new Command("sendrgb", SendRGB, "sendrgb"));
-            Commands.ChatCommands.Add(new Command("sendas", SendAs, "sendas"));
-		}
 
 		public static void SendAs(CommandArgs args)
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendMessage("Invalid syntax! Proper syntax: /sendas <player> [message]", Color.Red);
+				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendas <player> [message]");
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
-				args.Player.SendMessage("Missing player name", Color.Red);
+				args.Player.SendErrorMessage("Missing player name");
 				return;
 			}
 
@@ -73,7 +67,7 @@ namespace PluginTemplate
 			var players = TShock.Utils.FindPlayer(plStr);
 			if (players.Count == 0)
 			{
-				args.Player.SendMessage("Invalid player!", Color.Red);
+				args.Player.SendErrorMessage("Invalid player!");
                 return;
 			}
 			if (players.Count > 1)
@@ -90,17 +84,17 @@ namespace PluginTemplate
 						plrMatches += plr.Name;
 					}
 				}
-				args.Player.SendMessage("More than one player matched! Matches: " + plrMatches, Color.Red);
+				args.Player.SendErrorMessage("More than one player matched! Matches: " + plrMatches);
                 return;
 			}
-			string message = players[0].Group.Prefix + args.Parameters[0] + players[0].Group.Suffix + ":";
+			string message = players[0].Group.Prefix + players[0].Name + players[0].Group.Suffix + ": ";
 			for (int i = 1; i < args.Parameters.Count; i++)
 			{
-				message += " " + args.Parameters[i];
+				message += args.Parameters[i] + " ";
 			}
 
 			Color messagecolor = new Color(players[0].Group.R, players[0].Group.G, players[0].Group.B);
-			TShock.Utils.Broadcast(message, messagecolor);
+			TSPlayer.All.SendMessage(message, messagecolor);
 		}
 		public static void SendRa(CommandArgs args)
 		{
@@ -112,10 +106,10 @@ namespace PluginTemplate
 			string message = "";
 			for (int i = 0; i < args.Parameters.Count; i++)
 			{
-				message += " " + args.Parameters[i];
+				message += args.Parameters[i] + " ";
 			}
-            
-			TShock.Utils.Broadcast(message);
+
+            TSPlayer.All.SendInfoMessage(message);
 			
             return;
 		}
@@ -123,185 +117,185 @@ namespace PluginTemplate
 		{
 			if(args.Parameters.Count < 2)
 			{
-				args.Player.SendMessage("Invalid syntax! Proper syntax: /sendcolor [colorname] message");
+				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendcolor [colorname] <message>");
 				return;
 			}
 			string message = "";
 			for (int i = 1; i < args.Parameters.Count; i++)
 			{
-				message += " " + args.Parameters[i];
+				message += args.Parameters[i] + " ";
 			}
             string colorname = "" + args.Parameters[0];
             Color color = ColorFromName(colorname);
             if (color != new Color(1, 1, 1))
-                TShock.Utils.Broadcast(message, color);
+                TSPlayer.All.SendMessage(message, color);
             else
-                args.Player.SendMessage("Invalid color!");
+                args.Player.SendErrorMessage("Invalid color!");
             return;
 		}
 		public static void SendRGB(CommandArgs args) //start new command for custom colors by RGB
 		{
 			if(args.Parameters.Count < 4)
 			{
-				args.Player.SendMessage("Invalid syntax! Proper syntax: /sendcolor [Red] [Green] [Blue] [message]. Use 0-255 for RGB values");
+				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendcolor [Red] [Green] [Blue] [message]. Use 0-255 for RGB values");
 				return;
 			}
 			string message = "";
 			for (int i = 3; i < args.Parameters.Count; i++)
 			{
-				message += " " + args.Parameters[i];
+				message += args.Parameters[i] + " ";
 			}
 
 			byte R=Convert.ToByte(args.Parameters[0],10);
 			byte G=Convert.ToByte(args.Parameters[1],10);
 			byte B=Convert.ToByte(args.Parameters[2],10);
-			TShock.Utils.Broadcast(message, new Color(R,G,B));
+			TSPlayer.All.SendMessage(message, new Color(R,G,B));
             return;
 		}
 		public static Color ColorFromName(string name) //sigh...you guys removed this
 		{
-            if (name == "aliceblue") return Color.AliceBlue;
-            else if (name == "antiquewhite") return Color.AntiqueWhite;
-            else if (name == "aqua") return Color.Aqua;
-            else if (name == "aquamarine") return Color.Aquamarine;
-            else if (name == "azure") return Color.Azure;
-            else if (name == "beige") return Color.Beige;
-            else if (name == "bisque") return Color.Bisque;
-            else if (name == "black") return Color.Black;
-            else if (name == "blanchedalmond") return Color.BlanchedAlmond;
-            else if (name == "blue") return Color.Blue;
-            else if (name == "blueviolet") return Color.BlueViolet;
-            else if (name == "brown") return Color.Brown;
-            else if (name == "burlywood") return Color.BurlyWood;
-            else if (name == "cadetblue") return Color.CadetBlue;
-            else if (name == "chartreuse") return Color.Chartreuse;
-            else if (name == "chocolate") return Color.Chocolate;
-            else if (name == "coral") return Color.Coral;
-            else if (name == "cornflowerblue") return Color.CornflowerBlue;
-            else if (name == "cornsilk") return Color.Cornsilk;
-            else if (name == "crimson") return Color.Crimson;
-            else if (name == "cyan") return Color.Cyan;
-            else if (name == "darkblue") return Color.DarkBlue;
-            else if (name == "darkcyan") return Color.DarkCyan;
-            else if (name == "darkgoldenrod") return Color.DarkGoldenrod;
-            else if (name == "darkgray") return Color.DarkGray;
-            else if (name == "darkgreen") return Color.DarkGreen;
-            else if (name == "darkkhaki") return Color.DarkKhaki;
-            else if (name == "darkmagenta") return Color.DarkMagenta;
-            else if (name == "darkolivegreen") return Color.DarkOliveGreen;
-            else if (name == "darkorange") return Color.DarkOrange;
-            else if (name == "darkorchid") return Color.DarkOrchid;
-            else if (name == "darkred") return Color.DarkRed;
-            else if (name == "darksalmon") return Color.DarkSalmon;
-            else if (name == "darkseagreen") return Color.DarkSeaGreen;
-            else if (name == "darkslateblue") return Color.DarkSlateBlue;
-            else if (name == "darkslategray") return Color.DarkSlateGray;
-            else if (name == "darkturquoise") return Color.DarkTurquoise;
-            else if (name == "darkviolet") return Color.DarkViolet;
-            else if (name == "deeppink") return Color.DeepPink;
-            else if (name == "deepskyblue") return Color.DeepSkyBlue;
-            else if (name == "dimgray") return Color.DimGray;
-            else if (name == "dodgerblue") return Color.DodgerBlue;
-            else if (name == "firebrick") return Color.Firebrick;
-            else if (name == "floralwhite") return Color.FloralWhite;
-            else if (name == "forestgreen") return Color.ForestGreen;
-            else if (name == "fuchsia") return Color.Fuchsia;
-            else if (name == "gainsboro") return Color.Gainsboro;
-            else if (name == "ghostwhite") return Color.GhostWhite;
-            else if (name == "gold") return Color.Gold;
-            else if (name == "goldenrod") return Color.Goldenrod;
-            else if (name == "grey") return Color.Gray;
-            else if (name == "gray") return Color.Gray;
-            else if (name == "green") return Color.Green;
-            else if (name == "greenyellow") return Color.GreenYellow;
-            else if (name == "honeydew") return Color.Honeydew;
-            else if (name == "hotpink") return Color.HotPink;
-            else if (name == "indianred") return Color.IndianRed;
-            else if (name == "indigo") return Color.Indigo;
-            else if (name == "ivory") return Color.Ivory;
-            else if (name == "khaki") return Color.Khaki;
-            else if (name == "lavender") return Color.Lavender;
-            else if (name == "lavenderblush") return Color.LavenderBlush;
-            else if (name == "lawngreen") return Color.LawnGreen;
-            else if (name == "lemonchelse iffon") return Color.LemonChiffon;
-            else if (name == "lightblue") return Color.LightBlue;
-            else if (name == "lightcoral") return Color.LightCoral;
-            else if (name == "lightcyan") return Color.LightCyan;
-            else if (name == "lightgoldenrodyellow") return Color.LightGoldenrodYellow;
-            else if (name == "lightgray") return Color.LightGray;
-            else if (name == "lightgreen") return Color.LightGreen;
-            else if (name == "lightpink") return Color.LightPink;
-            else if (name == "lightsalmon") return Color.LightSalmon;
-            else if (name == "lightseagreen") return Color.LightSeaGreen;
-            else if (name == "lightskyblue") return Color.LightSkyBlue;
-            else if (name == "lightslategray") return Color.LightSlateGray;
-            else if (name == "lightsteelblue") return Color.LightSteelBlue;
-            else if (name == "lightyellow") return Color.LightYellow;
-            else if (name == "lime") return Color.Lime;
-            else if (name == "limegreen") return Color.LimeGreen;
-            else if (name == "linen") return Color.Linen;
-            else if (name == "magenta") return Color.Magenta;
-            else if (name == "maroon") return Color.Maroon;
-            else if (name == "mediumaquamarine") return Color.MediumAquamarine;
-            else if (name == "mediumblue") return Color.MediumBlue;
-            else if (name == "mediumorchid") return Color.MediumOrchid;
-            else if (name == "mediumpurple") return Color.MediumPurple;
-            else if (name == "mediumseagreen") return Color.MediumSeaGreen;
-            else if (name == "mediumslateblue") return Color.MediumSlateBlue;
-            else if (name == "mediumspringgreen") return Color.MediumSpringGreen;
-            else if (name == "mediumturquoise") return Color.MediumTurquoise;
-            else if (name == "mediumvioletred") return Color.MediumVioletRed;
-            else if (name == "midnightblue") return Color.MidnightBlue;
-            else if (name == "mintcream") return Color.MintCream;
-            else if (name == "mistyrose") return Color.MistyRose;
-            else if (name == "moccasin") return Color.Moccasin;
-            else if (name == "navajowhite") return Color.NavajoWhite;
-            else if (name == "navy") return Color.Navy;
-            else if (name == "oldlace") return Color.OldLace;
-            else if (name == "olive") return Color.Olive;
-            else if (name == "olivedrab") return Color.OliveDrab;
-            else if (name == "orange") return Color.Orange;
-            else if (name == "orangered") return Color.OrangeRed;
-            else if (name == "orchid") return Color.Orchid;
-            else if (name == "palegoldenrod") return Color.PaleGoldenrod;
-            else if (name == "palegreen") return Color.PaleGreen;
-            else if (name == "paleturquoise") return Color.PaleTurquoise;
-            else if (name == "palevioletred") return Color.PaleVioletRed;
-            else if (name == "papayawhip") return Color.PapayaWhip;
-            else if (name == "peachpuff") return Color.PeachPuff;
-            else if (name == "peru") return Color.Peru;
-            else if (name == "pink") return Color.Pink;
-            else if (name == "plum") return Color.Plum;
-            else if (name == "powderblue") return Color.PowderBlue;
-            else if (name == "purple") return Color.Purple;
-            else if (name == "red") return Color.Red;
-            else if (name == "rosybrown") return Color.RosyBrown;
-            else if (name == "royalblue") return Color.RoyalBlue;
-            else if (name == "saddlebrown") return Color.SaddleBrown;
-            else if (name == "salmon") return Color.Salmon;
-            else if (name == "sandybrown") return Color.SandyBrown;
-            else if (name == "seagreen") return Color.SeaGreen;
-            else if (name == "seashell") return Color.SeaShell;
-            else if (name == "sienna") return Color.Sienna;
-            else if (name == "silver") return Color.Silver;
-            else if (name == "skyblue") return Color.SkyBlue;
-            else if (name == "slateblue") return Color.SlateBlue;
-            else if (name == "slategray") return Color.SlateGray;
-            else if (name == "snow") return Color.Snow;
-            else if (name == "springgreen") return Color.SpringGreen;
-            else if (name == "steelblue") return Color.SteelBlue;
-            else if (name == "tan") return Color.Tan;
-            else if (name == "teal") return Color.Teal;
-            else if (name == "thistle") return Color.Thistle;
-            else if (name == "tomato") return Color.Tomato;
-            else if (name == "transparent") return Color.Transparent;
-            else if (name == "turquoise") return Color.Turquoise;
-            else if (name == "violet") return Color.Violet;
-            else if (name == "wheat") return Color.Wheat;
-            else if (name == "white") return Color.White;
-            else if (name == "whitesmoke") return Color.WhiteSmoke;
-            else if (name == "yellow") return Color.Yellow;
-            else if (name == "yellowgreen") return Color.YellowGreen; 
+            if (name.ToLower() == "aliceblue") return Color.AliceBlue;
+            else if (name.ToLower() == "antiquewhite") return Color.AntiqueWhite;
+            else if (name.ToLower() == "aqua") return Color.Aqua;
+            else if (name.ToLower() == "aquamarine") return Color.Aquamarine;
+            else if (name.ToLower() == "azure") return Color.Azure;
+            else if (name.ToLower() == "beige") return Color.Beige;
+            else if (name.ToLower() == "bisque") return Color.Bisque;
+            else if (name.ToLower() == "black") return Color.Black;
+            else if (name.ToLower() == "blanchedalmond") return Color.BlanchedAlmond;
+            else if (name.ToLower() == "blue") return Color.Blue;
+            else if (name.ToLower() == "blueviolet") return Color.BlueViolet;
+            else if (name.ToLower() == "brown") return Color.Brown;
+            else if (name.ToLower() == "burlywood") return Color.BurlyWood;
+            else if (name.ToLower() == "cadetblue") return Color.CadetBlue;
+            else if (name.ToLower() == "chartreuse") return Color.Chartreuse;
+            else if (name.ToLower() == "chocolate") return Color.Chocolate;
+            else if (name.ToLower() == "coral") return Color.Coral;
+            else if (name.ToLower() == "cornflowerblue") return Color.CornflowerBlue;
+            else if (name.ToLower() == "cornsilk") return Color.Cornsilk;
+            else if (name.ToLower() == "crimson") return Color.Crimson;
+            else if (name.ToLower() == "cyan") return Color.Cyan;
+            else if (name.ToLower() == "darkblue") return Color.DarkBlue;
+            else if (name.ToLower() == "darkcyan") return Color.DarkCyan;
+            else if (name.ToLower() == "darkgoldenrod") return Color.DarkGoldenrod;
+            else if (name.ToLower() == "darkgray") return Color.DarkGray;
+            else if (name.ToLower() == "darkgreen") return Color.DarkGreen;
+            else if (name.ToLower() == "darkkhaki") return Color.DarkKhaki;
+            else if (name.ToLower() == "darkmagenta") return Color.DarkMagenta;
+            else if (name.ToLower() == "darkolivegreen") return Color.DarkOliveGreen;
+            else if (name.ToLower() == "darkorange") return Color.DarkOrange;
+            else if (name.ToLower() == "darkorchid") return Color.DarkOrchid;
+            else if (name.ToLower() == "darkred") return Color.DarkRed;
+            else if (name.ToLower() == "darksalmon") return Color.DarkSalmon;
+            else if (name.ToLower() == "darkseagreen") return Color.DarkSeaGreen;
+            else if (name.ToLower() == "darkslateblue") return Color.DarkSlateBlue;
+            else if (name.ToLower() == "darkslategray") return Color.DarkSlateGray;
+            else if (name.ToLower() == "darkturquoise") return Color.DarkTurquoise;
+            else if (name.ToLower() == "darkviolet") return Color.DarkViolet;
+            else if (name.ToLower() == "deeppink") return Color.DeepPink;
+            else if (name.ToLower() == "deepskyblue") return Color.DeepSkyBlue;
+            else if (name.ToLower() == "dimgray") return Color.DimGray;
+            else if (name.ToLower() == "dodgerblue") return Color.DodgerBlue;
+            else if (name.ToLower() == "firebrick") return Color.Firebrick;
+            else if (name.ToLower() == "floralwhite") return Color.FloralWhite;
+            else if (name.ToLower() == "forestgreen") return Color.ForestGreen;
+            else if (name.ToLower() == "fuchsia") return Color.Fuchsia;
+            else if (name.ToLower() == "gainsboro") return Color.Gainsboro;
+            else if (name.ToLower() == "ghostwhite") return Color.GhostWhite;
+            else if (name.ToLower() == "gold") return Color.Gold;
+            else if (name.ToLower() == "goldenrod") return Color.Goldenrod;
+            else if (name.ToLower() == "grey") return Color.Gray;
+            else if (name.ToLower() == "gray") return Color.Gray;
+            else if (name.ToLower() == "green") return Color.Green;
+            else if (name.ToLower() == "greenyellow") return Color.GreenYellow;
+            else if (name.ToLower() == "honeydew") return Color.Honeydew;
+            else if (name.ToLower() == "hotpink") return Color.HotPink;
+            else if (name.ToLower() == "indianred") return Color.IndianRed;
+            else if (name.ToLower() == "indigo") return Color.Indigo;
+            else if (name.ToLower() == "ivory") return Color.Ivory;
+            else if (name.ToLower() == "khaki") return Color.Khaki;
+            else if (name.ToLower() == "lavender") return Color.Lavender;
+            else if (name.ToLower() == "lavenderblush") return Color.LavenderBlush;
+            else if (name.ToLower() == "lawngreen") return Color.LawnGreen;
+            else if (name.ToLower() == "lemonchelse iffon") return Color.LemonChiffon;
+            else if (name.ToLower() == "lightblue") return Color.LightBlue;
+            else if (name.ToLower() == "lightcoral") return Color.LightCoral;
+            else if (name.ToLower() == "lightcyan") return Color.LightCyan;
+            else if (name.ToLower() == "lightgoldenrodyellow") return Color.LightGoldenrodYellow;
+            else if (name.ToLower() == "lightgray") return Color.LightGray;
+            else if (name.ToLower() == "lightgreen") return Color.LightGreen;
+            else if (name.ToLower() == "lightpink") return Color.LightPink;
+            else if (name.ToLower() == "lightsalmon") return Color.LightSalmon;
+            else if (name.ToLower() == "lightseagreen") return Color.LightSeaGreen;
+            else if (name.ToLower() == "lightskyblue") return Color.LightSkyBlue;
+            else if (name.ToLower() == "lightslategray") return Color.LightSlateGray;
+            else if (name.ToLower() == "lightsteelblue") return Color.LightSteelBlue;
+            else if (name.ToLower() == "lightyellow") return Color.LightYellow;
+            else if (name.ToLower() == "lime") return Color.Lime;
+            else if (name.ToLower() == "limegreen") return Color.LimeGreen;
+            else if (name.ToLower() == "linen") return Color.Linen;
+            else if (name.ToLower() == "magenta") return Color.Magenta;
+            else if (name.ToLower() == "maroon") return Color.Maroon;
+            else if (name.ToLower() == "mediumaquamarine") return Color.MediumAquamarine;
+            else if (name.ToLower() == "mediumblue") return Color.MediumBlue;
+            else if (name.ToLower() == "mediumorchid") return Color.MediumOrchid;
+            else if (name.ToLower() == "mediumpurple") return Color.MediumPurple;
+            else if (name.ToLower() == "mediumseagreen") return Color.MediumSeaGreen;
+            else if (name.ToLower() == "mediumslateblue") return Color.MediumSlateBlue;
+            else if (name.ToLower() == "mediumspringgreen") return Color.MediumSpringGreen;
+            else if (name.ToLower() == "mediumturquoise") return Color.MediumTurquoise;
+            else if (name.ToLower() == "mediumvioletred") return Color.MediumVioletRed;
+            else if (name.ToLower() == "midnightblue") return Color.MidnightBlue;
+            else if (name.ToLower() == "mintcream") return Color.MintCream;
+            else if (name.ToLower() == "mistyrose") return Color.MistyRose;
+            else if (name.ToLower() == "moccasin") return Color.Moccasin;
+            else if (name.ToLower() == "navajowhite") return Color.NavajoWhite;
+            else if (name.ToLower() == "navy") return Color.Navy;
+            else if (name.ToLower() == "oldlace") return Color.OldLace;
+            else if (name.ToLower() == "olive") return Color.Olive;
+            else if (name.ToLower() == "olivedrab") return Color.OliveDrab;
+            else if (name.ToLower() == "orange") return Color.Orange;
+            else if (name.ToLower() == "orangered") return Color.OrangeRed;
+            else if (name.ToLower() == "orchid") return Color.Orchid;
+            else if (name.ToLower() == "palegoldenrod") return Color.PaleGoldenrod;
+            else if (name.ToLower() == "palegreen") return Color.PaleGreen;
+            else if (name.ToLower() == "paleturquoise") return Color.PaleTurquoise;
+            else if (name.ToLower() == "palevioletred") return Color.PaleVioletRed;
+            else if (name.ToLower() == "papayawhip") return Color.PapayaWhip;
+            else if (name.ToLower() == "peachpuff") return Color.PeachPuff;
+            else if (name.ToLower() == "peru") return Color.Peru;
+            else if (name.ToLower() == "pink") return Color.Pink;
+            else if (name.ToLower() == "plum") return Color.Plum;
+            else if (name.ToLower() == "powderblue") return Color.PowderBlue;
+            else if (name.ToLower() == "purple") return Color.Purple;
+            else if (name.ToLower() == "red") return Color.Red;
+            else if (name.ToLower() == "rosybrown") return Color.RosyBrown;
+            else if (name.ToLower() == "royalblue") return Color.RoyalBlue;
+            else if (name.ToLower() == "saddlebrown") return Color.SaddleBrown;
+            else if (name.ToLower() == "salmon") return Color.Salmon;
+            else if (name.ToLower() == "sandybrown") return Color.SandyBrown;
+            else if (name.ToLower() == "seagreen") return Color.SeaGreen;
+            else if (name.ToLower() == "seashell") return Color.SeaShell;
+            else if (name.ToLower() == "sienna") return Color.Sienna;
+            else if (name.ToLower() == "silver") return Color.Silver;
+            else if (name.ToLower() == "skyblue") return Color.SkyBlue;
+            else if (name.ToLower() == "slateblue") return Color.SlateBlue;
+            else if (name.ToLower() == "slategray") return Color.SlateGray;
+            else if (name.ToLower() == "snow") return Color.Snow;
+            else if (name.ToLower() == "springgreen") return Color.SpringGreen;
+            else if (name.ToLower() == "steelblue") return Color.SteelBlue;
+            else if (name.ToLower() == "tan") return Color.Tan;
+            else if (name.ToLower() == "teal") return Color.Teal;
+            else if (name.ToLower() == "thistle") return Color.Thistle;
+            else if (name.ToLower() == "tomato") return Color.Tomato;
+            else if (name.ToLower() == "transparent") return Color.Transparent;
+            else if (name.ToLower() == "turquoise") return Color.Turquoise;
+            else if (name.ToLower() == "violet") return Color.Violet;
+            else if (name.ToLower() == "wheat") return Color.Wheat;
+            else if (name.ToLower() == "white") return Color.White;
+            else if (name.ToLower() == "whitesmoke") return Color.WhiteSmoke;
+            else if (name.ToLower() == "yellow") return Color.Yellow;
+            else if (name.ToLower() == "yellowgreen") return Color.YellowGreen; 
             else return new Color(1, 1, 1);
 		}
 	}

@@ -48,14 +48,14 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="TerrariaServer, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="TerrariaServer, Version=1.14.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\TerrariaServer.exe</HintPath>
+      <HintPath>..\..\..\..\Documents\tshock_release\TerrariaServer.exe</HintPath>
     </Reference>
-    <Reference Include="TShockAPI, Version=3.9.0.526, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="TShockAPI, Version=4.2.0.1019, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\TShockAPI.dll</HintPath>
+      <HintPath>..\..\..\..\Documents\tshock_release\ServerPlugins\TShockAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
