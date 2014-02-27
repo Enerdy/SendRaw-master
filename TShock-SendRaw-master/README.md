@@ -27,8 +27,14 @@ Commands:
 
 /sendas **player name** *message* - *message* is broadcast to the server as though **player name** has said it, with the correct group color, prefix, and suffix
 
+/sendto **player name** *message* - A SuccessMessage containing *message* is sent to player with **player name**
+
 Changelog (Enerdy):
 ==============
+**1.1.3:**
+ - Added /sendto <player> <message> - Sends a success message to target player. Useful with ShortCommands and CmdAlias.
+ - Added console logging every time a command is used successfully.
+
 **1.1.2:**
  - Updated for Terraria v1.2.3.1 and TShock API v1.15
  - Rewrote outdated code for better compatibility

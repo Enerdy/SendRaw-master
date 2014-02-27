@@ -39,6 +39,7 @@ namespace PluginTemplate
             Commands.ChatCommands.Add(new Command("sendcolor", SendColor, "sendcolor"));
             Commands.ChatCommands.Add(new Command("sendrgb", SendRGB, "sendrgb"));
             Commands.ChatCommands.Add(new Command("sendas", SendAs, "sendas"));
+            Commands.ChatCommands.Add(new Command("sendto", SendTo, "sendto"));
 		}
 		protected override void Dispose(bool disposing)
 		{
@@ -55,11 +56,13 @@ namespace PluginTemplate
 			if (args.Parameters.Count < 1)
 			{
 				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendas <player> [message]");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendas: Invalid syntax.", args.Player.Name));
 				return;
 			}
 			if (args.Parameters[0].Length == 0)
 			{
 				args.Player.SendErrorMessage("Missing player name");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendas: Missing player name.", args.Player.Name));
 				return;
 			}
 
@@ -68,6 +71,7 @@ namespace PluginTemplate
 			if (players.Count == 0)
 			{
 				args.Player.SendErrorMessage("Invalid player!");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendas: Invalid player.", args.Player.Name));
                 return;
 			}
 			if (players.Count > 1)
@@ -85,31 +89,77 @@ namespace PluginTemplate
 					}
 				}
 				args.Player.SendErrorMessage("More than one player matched! Matches: " + plrMatches);
+                Log.ConsoleError(string.Format("{0} failed to execute /sendas: More than one player matched.", args.Player.Name));
                 return;
 			}
 			string message = players[0].Group.Prefix + players[0].Name + players[0].Group.Suffix + ": ";
 			for (int i = 1; i < args.Parameters.Count; i++)
 			{
-				message += args.Parameters[i] + " ";
+				message += args.Parameters[i] + ((i == args.Parameters.Count - 1) ? "" : " ");
 			}
 
 			Color messagecolor = new Color(players[0].Group.R, players[0].Group.G, players[0].Group.B);
 			TSPlayer.All.SendMessage(message, messagecolor);
+            Log.ConsoleInfo(args.Player.Name + " sent \"" + message + "\" to the server as " + players[0].Name + "'s Message.");
 		}
+
+        private static void SendTo(CommandArgs args)
+        {
+            if (args.Parameters.Count < 2)
+            {
+                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendto <player> <message>");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendto: Invalid syntax.", args.Player.Name));
+                return;
+            }
+            string message = "";
+            for (int i = 1; i < args.Parameters.Count; i++)
+            {
+                message += args.Parameters[i] + ((i == args.Parameters.Count - 1) ? "" : " ");
+            }
+            List<TSPlayer> plr = new List<TSPlayer>();
+            foreach (TSPlayer player in TShock.Utils.FindPlayer(args.Parameters[0]))
+            {
+                plr.Add(player);
+            }
+            if (plr.Count > 1)
+            {
+                string plrlist = "";
+                int count = 0;
+                foreach (TSPlayer player in plr)
+                {
+                    count++;
+                    plrlist += player.Name + ((plr.Count > count) ? ", " : "");
+                }
+                args.Player.SendErrorMessage("More than one player matched! Matches: " + plrlist);
+                Log.ConsoleError(string.Format("{0} failed to execute /sendto: More than one player matched.", args.Player.Name));
+                return;
+            }
+            else if (plr.Count < 1)
+            {
+                args.Player.SendErrorMessage("Invalid player!");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendto: Invalid player.", args.Player.Name));
+                return;
+            }
+            plr[0].SendSuccessMessage(message);
+            Log.ConsoleInfo(args.Player.Name + " sent \"" + message + "\" to " + plr[0].Name + " as a SuccessMessage.");
+        }
+
 		public static void SendRa(CommandArgs args)
 		{
 			if (args.Parameters.Count < 1)
 			{
-				args.Player.SendMessage("Invalid syntax! Proper syntax: /sendraw [something to send]", Color.Red);
+				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendraw [something to send]");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendraw: Invalid syntax.", args.Player.Name));
 				return;
 			}
 			string message = "";
 			for (int i = 0; i < args.Parameters.Count; i++)
 			{
-				message += args.Parameters[i] + " ";
+                message += args.Parameters[i] + ((i == args.Parameters.Count - 1) ? "" : " ");
 			}
 
             TSPlayer.All.SendInfoMessage(message);
+            Log.ConsoleInfo(args.Player.Name + " sent \"" + message + "\" to the server as an InfoMessage.");
 			
             return;
 		}
@@ -118,19 +168,26 @@ namespace PluginTemplate
 			if(args.Parameters.Count < 2)
 			{
 				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendcolor [colorname] <message>");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendcolor: Invalid syntax.", args.Player.Name));
 				return;
 			}
 			string message = "";
 			for (int i = 1; i < args.Parameters.Count; i++)
 			{
-				message += args.Parameters[i] + " ";
+                message += args.Parameters[i] + ((i == args.Parameters.Count - 1) ? "" : " ");
 			}
             string colorname = "" + args.Parameters[0];
             Color color = ColorFromName(colorname);
             if (color != new Color(1, 1, 1))
+            {
                 TSPlayer.All.SendMessage(message, color);
+                Log.ConsoleInfo(args.Player.Name + " sent \"" + message + string.Format("\" to the server as a Message (Color: {0}).", color.ToString()));
+            }
             else
+            {
                 args.Player.SendErrorMessage("Invalid color!");
+                Log.ConsoleError(string.Format("{0} failed to execute /sendcolor: Invalid color.", args.Player.Name));
+            }
             return;
 		}
 		public static void SendRGB(CommandArgs args) //start new command for custom colors by RGB
@@ -138,18 +195,22 @@ namespace PluginTemplate
 			if(args.Parameters.Count < 4)
 			{
 				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /sendcolor [Red] [Green] [Blue] [message]. Use 0-255 for RGB values");
-				return;
+                Log.ConsoleError(string.Format("{0} failed to execute /sendrgb: Invalid syntax.", args.Player.Name));
+                return;
 			}
 			string message = "";
 			for (int i = 3; i < args.Parameters.Count; i++)
 			{
-				message += args.Parameters[i] + " ";
+                message += args.Parameters[i] + ((i == args.Parameters.Count - 1) ? "" : " ");
 			}
 
 			byte R=Convert.ToByte(args.Parameters[0],10);
 			byte G=Convert.ToByte(args.Parameters[1],10);
 			byte B=Convert.ToByte(args.Parameters[2],10);
-			TSPlayer.All.SendMessage(message, new Color(R,G,B));
+            Color color = new Color(R, G, B);
+			TSPlayer.All.SendMessage(message, color);
+            Log.ConsoleInfo(args.Player.Name + " sent \"" + message + string.Format("\" to the server as a Message (RGB: {0},{1},{2}).", R, G, B));
+
             return;
 		}
 		public static Color ColorFromName(string name) //sigh...you guys removed this
